@@ -1,24 +1,42 @@
-package com.example;
+package net.oredebug;
 
-import net.fabricmc.api.ModInitializer;
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.minecraft.block.Blocks;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
+import org.lwjgl.glfw.GLFW;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.HashSet;
+import java.util.Set;
 
-public class ExampleMod implements ModInitializer {
-	public static final String MOD_ID = "modid";
+public class OreDebugClient implements ClientModInitializer {
+    private static final MinecraftClient client = MinecraftClient.getInstance();
+    private static final Set<BlockHighlight> ores = new HashSet<>();
+    private static boolean xrayEnabled = false;
+    private static KeyBinding toggleKey;
 
-	// This logger is used to write text to the console and the log file.
-	// It is considered best practice to use your mod id as the logger's name.
-	// That way, it's clear which mod wrote info, warnings, and errors.
-	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+    @Override
+    public void onInitializeClient() {
+        toggleKey = new KeyBinding("key.oredebug.toggle", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_X, "key.categories.misc");
+        KeyBindingHelper.registerKeyBinding(toggleKey);
 
-	@Override
-	public void onInitialize() {
-		// This code runs as soon as Minecraft is in a mod-load-ready state.
-		// However, some things (like resources) may still be uninitialized.
-		// Proceed with mild caution.
+        ores.add(new BlockHighlight(Blocks.DIAMOND_ORE, 0x00FFFF));
+        ores.add(new BlockHighlight(Blocks.IRON_ORE, 0xFFA500));
 
-		LOGGER.info("Hello Fabric world!");
-	}
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            while (toggleKey.wasPressed()) {
+                xrayEnabled = !xrayEnabled;
+            }
+        });
+    }
+
+    public static boolean isXrayEnabled() {
+        return xrayEnabled;
+    }
+
+    public static Set<BlockHighlight> getOres() {
+        return ores;
+    }
 }
