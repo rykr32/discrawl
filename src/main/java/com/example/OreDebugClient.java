@@ -27,9 +27,15 @@ public class OreDebugClient implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (toggleKey.wasPressed()) {
-                xrayEnabled = !xrayEnabled;
-            }
-        });
+        xrayEnabled = !xrayEnabled;
+        System.out.println("X-Ray " + (xrayEnabled ? "enabled" : "disabled"));
+    }
+
+    // Skanuj tylko, gdy X-Ray aktywny
+    if (xrayEnabled && client.player != null && client.world != null) {
+        BlockFinder.scanNearbyBlocks(24); // bezpieczny zasięg 24 bloki
+    }
+});
     }
 
     public static boolean isXrayEnabled() {
