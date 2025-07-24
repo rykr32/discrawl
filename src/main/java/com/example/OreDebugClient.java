@@ -20,7 +20,10 @@ public class OreDebugClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         toggleKey = new KeyBinding("key.oredebug.toggle", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_X, "key.categories.misc");
-        KeyBindingHelper.registerKeyBinding(toggleKey);
+        private static KeyBinding openGuiKey;
+        openGuiKey = KeyBindingHelper.registerKeyBinding(
+    new KeyBinding("key.oredebug.opengui", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_INSERT, "category.oredebug")
+);
 
         ores.add(new BlockHighlight(Blocks.DIAMOND_ORE, 0x00FFFF));
         ores.add(new BlockHighlight(Blocks.IRON_ORE, 0xFFA500));
@@ -29,11 +32,15 @@ public class OreDebugClient implements ClientModInitializer {
             while (toggleKey.wasPressed()) {
         xrayEnabled = !xrayEnabled;
         System.out.println("X-Ray " + (xrayEnabled ? "enabled" : "disabled"));
+        while (openGuiKey.wasPressed()) {
+           client.setScreen(new OreDebugScreen());
+    }
+
     }
 
     // Skanuj tylko, gdy X-Ray aktywny
     if (xrayEnabled && client.player != null && client.world != null) {
-        BlockFinder.scanNearbyBlocks(24); // bezpieczny zasięg 24 bloki
+        BlockFinder.scanNearbyBlocks(scanRange); // bezpieczny zasięg 24 bloki
     }
 });
     }
