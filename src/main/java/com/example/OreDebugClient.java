@@ -23,7 +23,9 @@ public class OreDebugClient implements ClientModInitializer {
         private static KeyBinding openGuiKey;
         openGuiKey = KeyBindingHelper.registerKeyBinding(
     new KeyBinding("key.oredebug.opengui", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_INSERT, "category.oredebug")
-);
+   ConfigManager.load();
+   Runtime.getRuntime().addShutdownHook(new Thread(ConfigManager::save));
+   );
 
         ores.add(new BlockHighlight(Blocks.DIAMOND_ORE, 0x00FFFF));
         ores.add(new BlockHighlight(Blocks.IRON_ORE, 0xFFA500));
