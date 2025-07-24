@@ -46,3 +46,4 @@ public class OreDebugClient implements ClientModInitializer {
         return ores;
     }
 }
+    public static int scanRange = 24; // domyślny zasięg
