@@ -39,6 +39,8 @@ public class OreDebugScreen extends Screen {
                 OreDebugClient.getVisibleBlockIds().add(blockId.toLowerCase());
                 blockInput.setText("");
                 recreateRemoveButtons();
+                ConfigManager.save();
+
             }
         }).position(centerX - 50, y).size(100, 20).build());
 
